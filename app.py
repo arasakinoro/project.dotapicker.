@@ -158,25 +158,30 @@ def load_heroes():
     id_to_name = {h['id']: h['localized_name'] for h in heroes}
     return len(heroes)
 
-# Получение статистики matchup для одного героя
-@st.cache_data
+@st.cache_data(ttl=1800)  # кэш на 30 минут
 def get_matchups_from_opendota(hero_id):
     url = f"https://api.opendota.com/api/heroes/{hero_id}/matchups"
-    try:
-        resp = requests.get(url, timeout=10)
-        if resp.status_code != 200:
-            return {}
-        data = resp.json()
-        matchups = {}
-        for m in data:
-            opp_id = m['hero_id']
-            games = m['games_played']
-            if games > 5:
-                winrate = (m['wins'] / games) * 100
-                matchups[opp_id] = {'winrate': winrate, 'games': games}
-        return matchups
-    except:
-        return {}
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, timeout=12)
+            if resp.status_code == 429:
+                st.warning(f"Лимит запросов — ждём {5 * (attempt + 1)} сек...")
+                time.sleep(5 * (attempt + 1))
+                continue
+            if resp.status_code != 200:
+                return {}
+            data = resp.json()
+            matchups = {}
+            for m in data:
+                opp_id = m['hero_id']
+                games = m['games_played']
+                if games > 1:  # уменьшили до 1 — чтобы включать редкие пары
+                    winrate = (m['wins'] / games) * 100
+                    matchups[opp_id] = {'winrate': winrate, 'games': games}
+            return matchups
+        except:
+            time.sleep(3)
+    return {}
 
 # Основная функция рекомендаций
 def recommend_heroes(my_role, enemies_names, top_k=7, mode='average'):
