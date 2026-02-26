@@ -1,3 +1,8 @@
+!pip install selenium --quiet
+!apt-get update --quiet
+!apt install chromium-chromedriver --quiet
+!cp /usr/lib/chromium-browser/chromedriver /usr/bin
+!pip install cloudscraper --quiet
 import streamlit as st
 import requests
 from collections import defaultdict
