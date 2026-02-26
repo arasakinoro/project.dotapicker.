@@ -43,29 +43,40 @@ def get_matchups_from_opendota(hero_id):
 
 def recommend_heroes(my_role, enemies_names, top_k=7, mode='average'):
     # (твоя функция полностью, без изменений)
-
-# Интерфейс сайта (твой текущий код с selectbox и text_input)
-
-st.set_page_config(page_title="Dota 2 Рекомендатор", layout="wide")
-st.title("Dota 2 Рекомендатор героев — патч 7.40")
-st.markdown("Выбери роль и укажи врагов — получи топ-7 пиков!")
+# Здесь заканчиваются функции — дальше код на уровне модуля
 
 load_heroes()
 
-role = st.selectbox("Твоя роль", ["Carry", "Mid", "Offlane", "Soft Support", "Hard Support"])
+st.set_page_config(page_title="Dota 2 Рекомендатор", layout="wide")
+
+st.title("Dota 2 Рекомендатор героев — патч 7.40")
+st.markdown("Выбери свою роль и укажи врагов — получи топ-7 пиков для победы!")
+
+role = st.selectbox(
+    "Твоя роль",
+    ["Carry", "Mid", "Offlane", "Soft Support", "Hard Support"],
+    index=0
+)
 role_num = {"Carry": 1, "Mid": 2, "Offlane": 3, "Soft Support": 4, "Hard Support": 5}[role]
 
-enemies_input = st.text_input("Враги (через запятую)", "Medusa, Storm Spirit, Mars")
+enemies_input = st.text_input(
+    "Враги (через запятую, 1–5 шт.)",
+    placeholder="Medusa, Storm Spirit, Mars",
+    value="Medusa, Storm Spirit, Mars"
+)
 
-if st.button("Получить рекомендации"):
+if st.button("Получить рекомендации", type="primary", use_container_width=True):
     enemies = [e.strip() for e in enemies_input.split(',') if e.strip()]
+    
     if not enemies:
         st.error("Укажи хотя бы одного врага")
     else:
-        with st.spinner("Загружаем данные..."):
+        with st.spinner("Анализируем статистику OpenDota..."):
             recs = recommend_heroes(role_num, enemies)
+        
         st.success("Рекомендованные герои:")
         for i, rec in enumerate(recs, 1):
             st.markdown(f"**{i}.** {rec}")
 
-st.caption("Данные: OpenDota API | Проект для школы")
+st.markdown("---")
+st.caption("Данные: OpenDota API | Сделано для школьного проекта")
