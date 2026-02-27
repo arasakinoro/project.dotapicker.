@@ -1,4 +1,3 @@
-!pip install --quiet streamlit requests tqdm pandas==2.2.2
 
 # Импорт и проверка
 import streamlit as st
